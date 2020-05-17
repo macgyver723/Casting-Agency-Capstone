@@ -1,0 +1,59 @@
+import os
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+database_path = os.environ['DATABASE_URL']
+
+db = SQLAlchemy()
+
+'''
+setup_db(app)
+    binds a flask application and a SQLAlchemy service
+'''
+
+
+def setup_db(app, database_path=database_path):
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_path
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.app = app
+    db.init_app(app)
+
+
+class Movie(db.Model):
+    __tablename__ = 'movies'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    release_date = db.Column(db.DateTime, nullable=False)
+    genre = db.Column(db.String(150), nullable=False)
+    # add a relationship to role
+
+    def __repr__(self):
+        return f"<Movie {self.id} {self.title} " \
+            "Release date: {self.release_date} genres: {self.genre}>"
+
+
+class Actor(db.Model):
+    __tablename__ = 'actors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=False)
+    birthdate = db.Column(db.DateTime, nullable=False)
+    gender = db.Column(db.String(1), nullable=False)
+    # add a relationship to role
+
+    def get_age(self):
+        age_in_seconds = (datetime.utcnow() - self.birthdate).total_seconds()
+        return int(age_in_seconds / (60*60*24*365))
+
+    def __repr__(self):
+        return f"<Actor {self.id} Age: {self.get_age()} Gender: {self.gender}"
+
+
+'''
+@TODO: complete this child table of Movie and Actor
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+'''
