@@ -27,7 +27,7 @@ def get_paginated(request, selection):
     start = (page - 1) * RESULTS_PER_PAGE
     end = start + RESULTS_PER_PAGE
     results = [s.format() for s in selection]
-    print(results[start:end])
+
     return results[start:end]
 
 
@@ -35,7 +35,6 @@ def get_paginated(request, selection):
 def get_actors():
     actors = Actor.query.order_by(Actor.name).all()
     selected_actors = get_paginated(request, actors)
-    print(f"\t\t{type(selected_actors)}")
     if len(selected_actors) == 0:
         abort(404)
 
@@ -53,7 +52,7 @@ def add_actor():
     name = body['name']
     birthdate = body['birthdate']
     gender = body['gender']
-    seeking_work = body['seekingWork']
+    seeking_work = bool(body['seekingWork'])
 
     try:
         new_actor = Actor(
@@ -63,7 +62,7 @@ def add_actor():
             seeking_work=seeking_work
         )
         new_actor.insert()
-    except Exception:
+    except Exception as e:
         abort(422)
     return jsonify({
         'success': True,
