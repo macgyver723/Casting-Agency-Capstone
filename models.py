@@ -45,6 +45,14 @@ class Movie(db.Model, DatabaseItem):
         return f"<Movie {self.id} {self.title} " \
             "Release date: {self.release_date} genres: {self.genre}>"
 
+    def format(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'release_date': str(self.release_date),
+            'genre': self.genre
+        }
+
 
 class Actor(db.Model, DatabaseItem):
     __tablename__ = 'actors'
@@ -61,8 +69,10 @@ class Actor(db.Model, DatabaseItem):
         return int(age_in_seconds / (60*60*24*365))
 
     def __repr__(self):
-        return f"<Actor {self.id} Name: {self.name} Age: {self.get_age()} Gender: {self.gender} Seeking Work: {self.seeking_work}>"
-    
+        return f"<Actor {self.id} Name: {self.name} Age: " + \
+            f"{self.get_age()} Gender: {self.gender} " + \
+            f"Seeking Work: {self.seeking_work}>"
+
     def format(self):
         return {
             'id': self.id,
