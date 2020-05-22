@@ -171,5 +171,20 @@ def edit_movie(movie_id):
     })
 
 
+@app.route('/movies/<int:movie_id>', methods=['DELETE'])
+def delete_movie(movie_id):
+    movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
+    if movie is None:
+        abort(404)
+    
+    deleted_title = movie.title
+    movie.delete()
+
+    return jsonify({
+        'success': True,
+        'deletedTitle': deleted_title
+    })
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
