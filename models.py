@@ -61,14 +61,15 @@ class Actor(db.Model, DatabaseItem):
         return int(age_in_seconds / (60*60*24*365))
 
     def __repr__(self):
-        return f"<Actor {self.id} Age: {self.get_age()} Gender: {self.gender}"
+        return f"<Actor {self.id} Name: {self.name} Age: {self.get_age()} Gender: {self.gender} Seeking Work: {self.seeking_work}>"
     
     def format(self):
         return {
             'id': self.id,
             'name': self.name,
-            'age': self.get_age,
-            'gender': self.gender
+            'age': self.get_age(),
+            'gender': self.gender,
+            'seeking_work': self.seeking_work
         }
 
 
