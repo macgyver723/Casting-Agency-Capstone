@@ -19,7 +19,20 @@ def setup_db(app, database_path=database_path):
     db.init_app(app)
 
 
-class Movie(db.Model):
+class DatabaseItem():
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+class Movie(db.Model, DatabaseItem):
     __tablename__ = 'movies'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -33,13 +46,14 @@ class Movie(db.Model):
             "Release date: {self.release_date} genres: {self.genre}>"
 
 
-class Actor(db.Model):
+class Actor(db.Model, DatabaseItem):
     __tablename__ = 'actors'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
     birthdate = db.Column(db.DateTime, nullable=False)
     gender = db.Column(db.String(1), nullable=False)
+    seeking_work = db.Column(db.Boolean, nullable=False, default=True)
     # add a relationship to role
 
     def get_age(self):
@@ -48,6 +62,14 @@ class Actor(db.Model):
 
     def __repr__(self):
         return f"<Actor {self.id} Age: {self.get_age()} Gender: {self.gender}"
+    
+    def format(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'age': self.get_age,
+            'gender': self.gender
+        }
 
 
 '''
