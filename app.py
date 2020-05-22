@@ -105,6 +105,20 @@ def edit_actor(actor_id):
         'updated_actor': actor.format()
     })
 
+@app.route('/actors/<int:actor_id>', methods=['DELETE'])
+def delete_actor(actor_id):
+    actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
+    if actor is None:
+        abort(404)
+    
+    deleted_name = actor.name
+    actor.delete()
+
+    return jsonify({
+        'success': True,
+        'deleted_name': deleted_name
+    })
+
 
 @app.route('/movies')
 def get_movies():
@@ -182,7 +196,7 @@ def delete_movie(movie_id):
 
     return jsonify({
         'success': True,
-        'deletedTitle': deleted_title
+        'deleted_title': deleted_title
     })
 
 
