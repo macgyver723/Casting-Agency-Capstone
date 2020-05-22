@@ -55,11 +55,11 @@ def get_actors():
 
 @app.route('/actors', methods=['POST'])
 def add_actor():
-    body = request.get_json()
-    name = body['name']
-    birthdate = body['birthdate']
-    gender = body['gender']
-    seeking_work = bool(body['seekingWork'])
+    data = request.get_json()
+    name = data.get('name', None)
+    birthdate = data.get('birthdate', None)
+    gender = data.get('gender', None)
+    seeking_work = bool(data.get('seekingWork', None))
 
     try:
         new_actor = Actor(
@@ -111,10 +111,10 @@ def get_movies():
 
 @app.route('/movies', methods=['POST'])
 def add_movie():
-    body = request.get_json()
-    title = body['title']
-    release_date = body['releaseDate']
-    genre = body['genre']
+    data = request.get_json()
+    title = data.get('title', None)
+    release_date = data.get('releaseDate', None)
+    genre = data.get('genre', None)
 
     try:
         new_movie = Movie(
