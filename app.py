@@ -22,6 +22,13 @@ app = create_app()
 RESULTS_PER_PAGE = 10
 
 
+@app.after_request
+def after_request(response):
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,true")
+    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH,OPTIONS")
+    return response
+
+
 def get_paginated(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * RESULTS_PER_PAGE
@@ -62,13 +69,28 @@ def add_actor():
             seeking_work=seeking_work
         )
         new_actor.insert()
-    except Exception as e:
+    except Exception:
         abort(422)
     return jsonify({
         'success': True,
         'id': new_actor.id,
         'total_actors': len(Actor.query.all())
     })
+
+# @app.route('/actors/<int:actor_id>', methods=['PATCH'])
+# def modify_actor(actor_id):
+#     actor = Actor.query.filter(Actor.id=actor_id).one_or_none()
+#     if actor is None:
+#         abort(404)
+    
+#     body = request.get_json()
+#     name = body['name']
+#     birthdate = body['birthdate']
+#     gender = body['gender']
+#     seeking_work = bool(body['seekingWork'])
+
+#     try:
+
 
 
 @app.route('/movies')
