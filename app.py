@@ -24,8 +24,14 @@ RESULTS_PER_PAGE = 10
 
 @app.after_request
 def after_request(response):
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,true")
-    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH,OPTIONS")
+    response.headers.add(
+        "Access-Control-Allow-Headers",
+        "Content-Type,Authorization,true"
+        )
+    response.headers.add(
+        "Access-Control-Allow-Methods",
+        "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+        )
     return response
 
 
@@ -105,12 +111,13 @@ def edit_actor(actor_id):
         'updated_actor': actor.format()
     })
 
+
 @app.route('/actors/<int:actor_id>', methods=['DELETE'])
 def delete_actor(actor_id):
     actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
     if actor is None:
         abort(404)
-    
+
     deleted_name = actor.name
     actor.delete()
 
@@ -173,12 +180,13 @@ def edit_movie(movie_id):
 
     try:
         movie.title = title if title else movie.title
-        movie.release_date = release_date if release_date else movie.release_date
+        movie.release_date = release_date if release_date \
+            else movie.release_date
         movie.genre = genre if genre else movie.genre
         movie.update()
     except Exception:
         abort(422)
-    
+
     return jsonify({
         'success': True,
         'updated_movie': movie.format()
@@ -190,7 +198,7 @@ def delete_movie(movie_id):
     movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
     if movie is None:
         abort(404)
-    
+
     deleted_title = movie.title
     movie.delete()
 
