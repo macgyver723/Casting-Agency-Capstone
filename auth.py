@@ -1,6 +1,6 @@
 import json
 import os
-from flask import request, _request_ctx_stack
+from flask import request
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
@@ -10,15 +10,18 @@ AUTH0_DOMAIN = os.environ['AUTH0_DOMAIN']
 ALGORITHMS = os.environ['ALGORITHMS']
 API_AUDIENCE = os.environ['API_AUDIENCE']
 
-## AuthError Exception
+# AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
+
 
 def get_token_auth_header():
     """
@@ -55,12 +58,13 @@ def get_token_auth_header():
     token = parts[1]
     return token
 
+
 def check_permissions(permission, payload):
     '''
     Checks that the permissions inside of the payload are authorized
     @param string permission (ex: 'post:drink')
     @payload decoded jwt payload
-    @return true of permission is valid, otherwise raise an AuthError 
+    @return true of permission is valid, otherwise raise an AuthError
     '''
     if 'permissions' not in payload:
         raise AuthError({
@@ -74,9 +78,7 @@ def check_permissions(permission, payload):
         }, 403)
     return True
 
-'''
-    !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
-'''
+
 def verify_decode_jwt(token):
     '''
     Verify that the the jwt token is a valid token
@@ -125,13 +127,16 @@ def verify_decode_jwt(token):
                 'description': 'Unable to find the appropriate key.'
             }, 400)
 
+
 def requires_auth(permission=''):
     '''
-    @param permission string permission (ex: 'post:drink')
+    @param permission string permission (ex: 'add:movie')
     it should use the get_token_auth_header method to get the token
     it should use the verify_decode_jwt method to decode the jwt
-    it should use the check_permissions method validate claims and check the requested permission
-    return the decorator which passes the decoded payload to the decorated method
+    it should use the check_permissions method validate claims
+        and check the requested permission
+    return the decorator which passes the decoded payload
+        to the decorated method
     '''
     def requires_auth_decorator(f):
         """Determines if the Access Token is valid
@@ -141,15 +146,15 @@ def requires_auth(permission=''):
             token = get_token_auth_header()
             try:
                 payload = verify_decode_jwt(token)
-            except:
+            except Exception:
                 raise AuthError({
-                'code' : 'unauthorized',
-                'description' : 'could not process token'
-            }, 401)
+                    'code': 'unauthorized',
+                    'description': 'could not process token'
+                }, 401)
 
             check_permissions(permission, payload)
-            
+
             return f(*args, **kwargs)
-           
+
         return decorated
     return requires_auth_decorator
