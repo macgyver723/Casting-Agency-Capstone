@@ -2,6 +2,7 @@ from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 
 from models import setup_db, Actor, Movie
+from auth import AuthError, requires_auth
 
 
 def create_app(test_config=None):
@@ -45,6 +46,7 @@ def get_paginated(request, selection):
 
 
 @app.route('/actors')
+@requires_auth('read:actors')
 def get_actors():
     actors = Actor.query.order_by(Actor.name).all()
     selected_actors = get_paginated(request, actors)
@@ -60,6 +62,7 @@ def get_actors():
 
 
 @app.route('/actors', methods=['POST'])
+@requires_auth('add:actors')
 def add_actor():
     data = request.get_json()
     name = data.get('name', None)
@@ -85,6 +88,7 @@ def add_actor():
 
 
 @app.route('/actors/<int:actor_id>', methods=['PATCH'])
+@requires_auth('edit:actors')
 def edit_actor(actor_id):
     actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
     if actor is None:
@@ -113,6 +117,7 @@ def edit_actor(actor_id):
 
 
 @app.route('/actors/<int:actor_id>', methods=['DELETE'])
+@requires_auth('delete:actors')
 def delete_actor(actor_id):
     actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
     if actor is None:
@@ -128,6 +133,7 @@ def delete_actor(actor_id):
 
 
 @app.route('/movies')
+@requires_auth('read:movies')
 def get_movies():
     movies = Movie.query.order_by(Movie.genre).all()
     seleted_movies = get_paginated(request, movies)
@@ -144,6 +150,7 @@ def get_movies():
 
 
 @app.route('/movies', methods=['POST'])
+@requires_auth('add:movies')
 def add_movie():
     data = request.get_json()
     title = data.get('title', None)
@@ -168,6 +175,7 @@ def add_movie():
 
 
 @app.route('/movies/<int:movie_id>', methods=['PATCH'])
+@requires_auth('edit:movies')
 def edit_movie(movie_id):
     movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
     if movie is None:
@@ -194,6 +202,7 @@ def edit_movie(movie_id):
 
 
 @app.route('/movies/<int:movie_id>', methods=['DELETE'])
+@requires_auth('delete:movies')
 def delete_movie(movie_id):
     movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
     if movie is None:
@@ -206,6 +215,15 @@ def delete_movie(movie_id):
         'success': True,
         'deleted_title': deleted_title
     })
+
+
+@app.errorhandler(AuthError)
+def not_found(error):
+    return jsonify({
+        "success": False,
+        'error': error.status_code,
+        'message': error.error
+    }), error.status_code
 
 
 if __name__ == '__main__':
