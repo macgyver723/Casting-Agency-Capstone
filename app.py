@@ -5,15 +5,6 @@ from models import setup_db, Actor, Movie
 from auth import AuthError, requires_auth
 
 # https://fsnd-stefan.auth0.com/authorize?audience=casting-agency&response_type=token&client_id=MKNzsmrLb5LVoFNvHBaR53rkIE0f5TGm&redirect_uri=http://0.0.0.0:8080/callback
-'''
-jwts
-Casting Assistant:
-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkhiZXQ0WlRvaTE2bzUyRXd4ZENoRSJ9.eyJpc3MiOiJodHRwczovL2ZzbmQtc3RlZmFuLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZWM5NWRmN2VlNTZjNDBjNmQ4MTY2NjAiLCJhdWQiOiJjYXN0aW5nLWFnZW5jeSIsImlhdCI6MTU5MDMzOTM3NSwiZXhwIjoxNTkwMzQ2NTc1LCJhenAiOiJNS056c21yTGI1TFZvRk52SEJhUjUzcmtJRTBmNVRHbSIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsicmVhZDphY3RvcnMiLCJyZWFkOm1vdmllcyJdfQ.GHowFCUeRtlft0UATpP91KNtsWSLPABt0B_qsV3GItmGsqTkSOCsV0X7sTZx2ZjAMbusKM04g3UO6oNafTLZncveXD0vCcvVFM3vVIVSJ8iApfW4QvSBxqNrSLZYZEHxYTDpPrcHCv1y6oV_Ay-jsA9C050_8qsN_NVr1gJJoa92X1ySG-g761e6qPm6GihJfuI6D68tIb_FWboT7Y5notr-HQ2FWrZnDnAIUzuR0FGQhp8QLgzDRgRw1EDxUjfWgIL9vumb_s3I_UTK1VI9KVbt7oyMX9HB3sYvkKDiSGVaWNSH7nV9qLsE90Z7_TDmPXWp9v_tIj9zLNMXcj4V3w
-Casting Director:
-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkhiZXQ0WlRvaTE2bzUyRXd4ZENoRSJ9.eyJpc3MiOiJodHRwczovL2ZzbmQtc3RlZmFuLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZWM5NWUxZGVlNTZjNDBjNmQ4MTY2ZDUiLCJhdWQiOiJjYXN0aW5nLWFnZW5jeSIsImlhdCI6MTU5MDM0MDE5MCwiZXhwIjoxNTkwMzQ3MzkwLCJhenAiOiJNS056c21yTGI1TFZvRk52SEJhUjUzcmtJRTBmNVRHbSIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiYWRkOmFjdG9ycyIsImRlbGV0ZTphY3RvciIsImVkaXQ6YWN0b3JzIiwiZWRpdDptb3ZpZXMiLCJyZWFkOmFjdG9ycyIsInJlYWQ6bW92aWVzIl19.FvEnFQoCLPMBH7yTs-KlxFQuJpaaFiaM162Q2TdKrCgbb_nplpC0u3vvh8JKL8uGbsc1IE0V-EqwTO1I6nE07Hza9CxUbJErdUAeGkyUJK7uc2sF4nKjCxr4u66RluRIuS4HyRJ1E49HnpTkBXes_ylC4b_WAjAKkpUBesoFIX9-VkywnTEtpR90HAaktp3KxibyWzMTBJFQH6O_9Lg0WnAGhWjqLVhGXuA-39rbcajiMpACiqz8YHIAh4MSvPtnS_zmX4ShIOZWQ6pY96vnoZMnSY0tu-CjjFB-5nJYiAo2DMTDGPEAYq5OAWWruhG9jilN_hz2QIcWwRMI0zy-YQ
-Executive Producer:
-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkhiZXQ0WlRvaTE2bzUyRXd4ZENoRSJ9.eyJpc3MiOiJodHRwczovL2ZzbmQtc3RlZmFuLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZWM5NWUzOWVlNTZjNDBjNmQ4MTY3MTkiLCJhdWQiOiJjYXN0aW5nLWFnZW5jeSIsImlhdCI6MTU5MDM0MDI4MiwiZXhwIjoxNTkwMzQ3NDgyLCJhenAiOiJNS056c21yTGI1TFZvRk52SEJhUjUzcmtJRTBmNVRHbSIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiYWRkOmFjdG9ycyIsImFkZDptb3ZpZXMiLCJkZWxldGU6YWN0b3IiLCJkZWxldGU6bW92aWUiLCJlZGl0OmFjdG9ycyIsImVkaXQ6bW92aWVzIiwicmVhZDphY3RvcnMiLCJyZWFkOm1vdmllcyJdfQ.KmFC65lb_yS6uNp4UuIGqNRZxteTXrsPWF3NIHkghKyAn-SKDCu--cY-mNbFvrVde0eipCzywe6NZ_iyQSXd4Fk6MgkJKeH_BNpoH_U5crBe98LMRShN-r1OFgOS3BHdZ3U0mwUoDCdVyLz6Za0x53oKGAqzsk-ZWb2mTE0CZiwGuIJvc2Tjs_cbxT1Xnh2XK4lLUr0RtaFisJsefiG444QVOgZ1sqAqvNmSFDzDZuzL860YGKIx9RRmxEcfDbq04VFBTq9Ey8z76ui_t91TGOkoSeRIvonIsrm5SK4CVi0qrlyqfuYTdy_2yw-FgYzFPGPD8v3wtubYtJoG0cw8YA
-'''
 
 
 def create_app(test_config=None):
@@ -26,11 +17,7 @@ def create_app(test_config=None):
     def index():
         return 'not implemented'
 
-    
-    # app = create_app()
-
     RESULTS_PER_PAGE = 10
-
 
     @app.after_request
     def after_request(response):
@@ -44,7 +31,6 @@ def create_app(test_config=None):
             )
         return response
 
-
     def get_paginated(request, selection):
         page = request.args.get('page', 1, type=int)
         start = (page - 1) * RESULTS_PER_PAGE
@@ -52,7 +38,6 @@ def create_app(test_config=None):
         results = [s.format() for s in selection]
 
         return results[start:end]
-
 
     @app.route('/actors')
     @requires_auth('read:actors')
@@ -68,7 +53,6 @@ def create_app(test_config=None):
             'total_actors': len(actors),
             'actors_displayed': len(selected_actors)
         })
-
 
     @app.route('/actors', methods=['POST'])
     @requires_auth('add:actors')
@@ -94,7 +78,6 @@ def create_app(test_config=None):
             'id': new_actor.id,
             'total_actors': len(Actor.query.all())
         })
-
 
     @app.route('/actors/<int:actor_id>', methods=['PATCH'])
     @requires_auth('edit:actors')
@@ -124,7 +107,6 @@ def create_app(test_config=None):
             'updated_actor': actor.format()
         })
 
-
     @app.route('/actors/<int:actor_id>', methods=['DELETE'])
     @requires_auth('delete:actors')
     def delete_actor(actor_id):
@@ -139,7 +121,6 @@ def create_app(test_config=None):
             'success': True,
             'deleted_name': deleted_name
         })
-
 
     @app.route('/movies')
     @requires_auth('read:movies')
@@ -156,7 +137,6 @@ def create_app(test_config=None):
             'total_movies': len(movies),
             'movies_displayed': len(seleted_movies)
         })
-
 
     @app.route('/movies', methods=['POST'])
     @requires_auth('add:movies')
@@ -181,7 +161,6 @@ def create_app(test_config=None):
             'id': new_movie.id,
             'total_movies': len(Movie.query.all())
         })
-
 
     @app.route('/movies/<int:movie_id>', methods=['PATCH'])
     @requires_auth('edit:movies')
@@ -209,7 +188,6 @@ def create_app(test_config=None):
             'updated_movie': movie.format()
         })
 
-
     @app.route('/movies/<int:movie_id>', methods=['DELETE'])
     @requires_auth('delete:movies')
     def delete_movie(movie_id):
@@ -225,7 +203,6 @@ def create_app(test_config=None):
             'deleted_title': deleted_title
         })
 
-
     @app.errorhandler(AuthError)
     def auth_error(error):
         return jsonify({
@@ -234,7 +211,6 @@ def create_app(test_config=None):
             'message': error.error
         }), error.status_code
 
-
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
@@ -242,7 +218,7 @@ def create_app(test_config=None):
             "error": 404,
             "message": "Not Found"
         }),
-    
+
     return app
 
 
