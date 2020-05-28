@@ -60,7 +60,7 @@ class Actor(db.Model, DatabaseItem):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
     birthdate = db.Column(db.DateTime, nullable=False)
-    gender = db.Column(db.String(1), nullable=False)
+    gender = db.Column(db.String(20), nullable=False)
     seeking_work = db.Column(db.Boolean, nullable=False, default=True)
     # add a relationship to role
 
