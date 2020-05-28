@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, render_template, redirect
 from flask_cors import CORS
 
 from models import setup_db, Actor, Movie
@@ -15,7 +15,11 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
-        return 'not implemented'
+        return render_template("index.html")
+    
+    @app.route('/callback')
+    def callback():
+        return render_template('home.html')
 
     RESULTS_PER_PAGE = 10
 
