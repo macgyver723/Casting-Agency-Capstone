@@ -43,6 +43,10 @@ def create_app(test_config=None):
 
         return results[start:end]
 
+    @app.route('/actorForm')
+    def actor_form():
+        return render_template('actorForm.html')
+        
     @app.route('/actors')
     @requires_auth('read:actors')
     def get_actors():

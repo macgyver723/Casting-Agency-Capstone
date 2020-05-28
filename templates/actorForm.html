@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title">New Actor</h1>
+        <form>
+            <div class="field">
+                <label class="label">Name</label>
+                <div class="control">
+                    <input id="inputName" class="input" type="text" placeholder="Actor Name">
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Birthdate</label>
+                <div class="control">
+                    <input id="inputBirthdate" class="input" type="date" placeholder="Actor Name">
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Gender</label>
+                <div class="control">
+                    <div class="select">
+                        <select id="inputGender">
+                            <option>M</option>
+                            <option>F</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <label class="checkbox">
+                        <input id="inputSeekingWork" type="checkbox">
+                        Seeking Work?
+                    </label>
+                </div>
+              </div>
+            
+        </form>
+    </div>
+</section>
+
+{% endblock %}
