@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <h1 class='title'>
+                    Actors
+                    <button class="button" id='btn'>New</button>
+                </h1>
+                <div class="container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Actor</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Seeking Work</th>
+                                <th>Edit/Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="actorsTable">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="column">
+                <h1 class='title'>
+                    Movies
+                </h1>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    const JWTS_LOCAL_KEY = 'JWTS_LOCAL_KEY';
+
+    var token = "";
+    // parse the fragment
+    const fragment = window.location.hash.substr(1).split('&')[0].split('=');
+    // check if the fragment includes the access token
+    if ( fragment[0] === 'access_token' ) {
+        // add the access token to the jwt
+        token = fragment[1];
+        // put item in local storage
+        localStorage.setItem(JWTS_LOCAL_KEY, this.token)
+        console.log("Token is: " + token);
+    }
+
+    const actorSection = document.getElementById('actorsJSON')
+    const actorsTable = document.getElementById('actorsTable')
+
+    function addActorRow(actor) {
+        console.log(actor)
+        const tableRow = document.createElement('tr')
+        tableRow.setAttribute('data-id', actor['id'])
+        tableRow.innerHTML = "<td><div contenteditbale>" + actor['name'] + "</div></td>"
+        tableRow.innerHTML += "<td>" + actor['age'] + "</td>"
+        tableRow.innerHTML += "<td>" + actor['gender'] + "</td>"
+        tableRow.innerHTML += "<td>" + actor['seeking_workd'] + "</td>"
+        tableRow.innerHTML += "<td><div class='buttons'>" +
+            "<button class='button' data-id='" + actor['id'] + "'>" +
+            "Edit</button>" +
+            "<button class='button is-danger' data-id=''" + actor['id'] + "'>" +
+            "Delete</button></div></td>"
+        actorsTable.appendChild(tableRow)
+    }
+
+    function editActor(rowId) {
+
+    }
+
+    fetch(
+        '/actors', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        }
+    )
+    .then(response => response.json())
+    .then(jsonResponse => {
+        console.log(jsonResponse)
+        jsonResponse['actors'].forEach(addActorRow)
+    })
+</script>
+{% endblock %}
