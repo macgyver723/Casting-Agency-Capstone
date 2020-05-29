@@ -3,7 +3,7 @@
 <section class="section">
     <div class="container">
         <h1 class="title">New Actor</h1>
-        <form>
+        <form class="box"> <!-- onsubmit="addActor()"> !-->
             <div class="field">
                 <label class="label">Name</label>
                 <div class="control">
@@ -35,10 +35,44 @@
                         Seeking Work?
                     </label>
                 </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <a id="btnSubmit" href="{{ url_for('home') }}" class="button is-link">Submit</a>
+                </div>
               </div>
-            
         </form>
     </div>
 </section>
 
+{% endblock %}
+{% block javascript %}
+<script>
+async function addActor() {
+    console.log('submit clicked')
+    await fetch(
+        '/actors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Access-Control-Allow-Headers": "Content-Type ,Authorization, true",
+                'Authorization': 'Bearer ' + localStorage.getItem('JWTS_LOCAL_KEY')
+            },
+            body: JSON.stringify({
+                'name': document.getElementById('inputName').value,
+                'birthdate': document.getElementById('inputBirthdate').value,
+                'gender': document.getElementById('inputGender').value,
+                'seekingWork': document.getElementById('inputSeekingWork').checked
+            })
+        }
+    )
+    .then(response => response.json())
+    .then(jsonResponse => console.log(jsonResponse))
+    .catch(err => console.log(err))
+}
+
+document.getElementById('btnSubmit').onclick = function(e) {
+    addActor()
+}
+</script>
 {% endblock %}

@@ -6,9 +6,54 @@
             <div class="column">
                 <h1 class='title'>
                     Actors
-                    <button class="button" id='btn'>New</button>
+                    <!-- <a id='btnNewActor' href="{{ url_for('actor_form') }}" class="button">New</a> -->
+                    <a id='btnNewActor' class="button">New</a>
                 </h1>
                 <div class="container">
+                    <section id='newActorForm' class="section hidden">
+                    <!-- <div class="container"> -->
+                        <h2 class="title">New Actor</h2>
+                        <form class="box">
+                            <div class="field">
+                                <label class="label">Name</label>
+                                <div class="control">
+                                    <input id="inputName" class="input" type="text" placeholder="Actor Name">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Birthdate</label>
+                                <div class="control">
+                                    <input id="inputBirthdate" class="input" type="date" placeholder="Actor Name">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Gender</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="inputGender">
+                                            <option>M</option>
+                                            <option>F</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <label class="checkbox">
+                                        <input id="inputSeekingWork" type="checkbox">
+                                        Seeking Work?
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <a id="btnSubmit" class="button is-link">Submit</a>
+                                </div>
+                              </div>
+                        </form>
+                    <!-- </div> -->
+                </section>
                     <table class="table">
                         <thead>
                             <tr>
@@ -40,32 +85,41 @@
     const JWTS_LOCAL_KEY = 'JWTS_LOCAL_KEY';
 
     var token = "";
-    // parse the fragment
-    const fragment = window.location.hash.substr(1).split('&')[0].split('=');
-    // check if the fragment includes the access token
-    if ( fragment[0] === 'access_token' ) {
-        // add the access token to the jwt
-        token = fragment[1];
-        // put item in local storage
-        localStorage.setItem(JWTS_LOCAL_KEY, this.token)
-        console.log("Token is: " + token);
+    // check if token is in local storage
+    token = localStorage.getItem(JWTS_LOCAL_KEY) || null
+
+    if (token === null) { // got here by callback
+        // parse the fragment
+        const fragment = window.location.hash.substr(1).split('&')[0].split('=');
+        // check if the fragment includes the access token
+        if ( fragment[0] === 'access_token' ) {
+            // add the access token to the jwt
+            token = fragment[1];
+            // put item in local storage
+            localStorage.setItem(JWTS_LOCAL_KEY, this.token)
+        }
     }
+
+    // TODO: build a logout feature
+    
 
     const actorSection = document.getElementById('actorsJSON')
     const actorsTable = document.getElementById('actorsTable')
+    const newActorBtn = document.getElementById('btnNewActor')
+    const newActorForm = document.getElementById('newActorForm')
+    const submitNewActorBtn = document.getElementById('btnSubmit')
 
     function addActorRow(actor) {
-        console.log(actor)
         const tableRow = document.createElement('tr')
-        tableRow.setAttribute('data-id', actor['id'])
-        tableRow.innerHTML = "<td><div contenteditbale>" + actor['name'] + "</div></td>"
+        tableRow.setAttribute('id', "actorRow-" + actor['id'])
+        tableRow.innerHTML = "<td>" + actor['name'] + "</td>"
         tableRow.innerHTML += "<td>" + actor['age'] + "</td>"
         tableRow.innerHTML += "<td>" + actor['gender'] + "</td>"
-        tableRow.innerHTML += "<td>" + actor['seeking_workd'] + "</td>"
+        tableRow.innerHTML += "<td>" + actor['seeking_work'] + "</td>"
         tableRow.innerHTML += "<td><div class='buttons'>" +
             "<button class='button' data-id='" + actor['id'] + "'>" +
             "Edit</button>" +
-            "<button class='button is-danger' data-id=''" + actor['id'] + "'>" +
+            "<button class='button is-danger delete-button' data-id='" + actor['id'] + "'>" +
             "Delete</button></div></td>"
         actorsTable.appendChild(tableRow)
     }
@@ -73,20 +127,95 @@
     function editActor(rowId) {
 
     }
+    // TODO: figure out how to redirect to login if expired token
+    
+    async function populateActors() {
+        await fetch(
+            '/actors', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            }
+        )
+        .then(response => response.json())
+        .then(jsonResponse => {
+            jsonResponse['actors'].forEach(addActorRow)
+        })
+        .then( () => {
+            registerAllDeleteButtons()
+        })
+    }
 
-    fetch(
-        '/actors', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+    function registerDeleteButton(e) {
+        e.preventDefault();
+        console.log('event', e);
+        const actorId = e.target.dataset['id'];
+
+        if (confirm("Are you sure you want to delete?")) {
+            fetch('/actors/' + actorId, {
+                method : 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then( () => {
+                const actorRow = document.getElementById('actorRow-' + actorId)
+                actorRow.parentNode.removeChild(actorRow)
+            })
+            .catch(err => console.log(err))
+        }
+    }
+
+    function registerAllDeleteButtons() {
+        const deleteButtons = document.querySelectorAll('.delete-button');
+        console.log("registering " + deleteButtons.length + " delete buttons")
+        for (let i = 0; i < deleteButtons.length; i++) {
+            const deleteButton = deleteButtons[i];
+            deleteButton.onclick = function(e) {
+                registerDeleteButton(e);
             }
         }
-    )
-    .then(response => response.json())
-    .then(jsonResponse => {
-        console.log(jsonResponse)
-        jsonResponse['actors'].forEach(addActorRow)
-    })
+    }
+    // populate actors of page1
+    // populate button links for pages
+    populateActors()
+
+    newActorBtn.onclick = function(e) {
+        e.preventDefault()
+        newActorForm.classList.remove('hidden')
+    }
+
+    submitNewActorBtn.onclick = async function(e) {
+        e.preventDefault()
+        newActorForm.classList.add('hidden')
+        // add new actor to db
+        await fetch(
+            '/actors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('JWTS_LOCAL_KEY')
+                },
+                body: JSON.stringify({
+                    'name': document.getElementById('inputName').value,
+                    'birthdate': document.getElementById('inputBirthdate').value,
+                    'gender': document.getElementById('inputGender').value,
+                    'seekingWork': document.getElementById('inputSeekingWork').checked
+                })
+            }
+        )
+        .then(response => console.log(response.json()))
+        .then(jsonResponse => {
+            location.href = jsonResponse['url']
+        })
+        .catch(err => console.log(err))
+        // clear table of actors
+        // populate rows
+        actorsTable.innerHTML = "";
+        populateActors()
+    }
 </script>
 {% endblock %}

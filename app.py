@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, jsonify, render_template, redirect
+from flask import Flask, request, abort, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 
 from models import setup_db, Actor, Movie
@@ -17,9 +17,13 @@ def create_app(test_config=None):
     def index():
         return render_template("index.html")
     
-    @app.route('/callback')
-    def callback():
+    @app.route('/home')
+    def home():
         return render_template('home.html')
+    
+    @app.route('/favicon.ico')
+    def favicon():
+        return ""
 
     RESULTS_PER_PAGE = 10
 
@@ -35,30 +39,32 @@ def create_app(test_config=None):
             )
         return response
 
-    def get_paginated(request, selection):
-        page = request.args.get('page', 1, type=int)
-        start = (page - 1) * RESULTS_PER_PAGE
-        end = start + RESULTS_PER_PAGE
-        results = [s.format() for s in selection]
+    # def get_paginated(request, selection):
+    #     page = request.args.get('page', 1, type=int)
+    #     start = (page - 1) * RESULTS_PER_PAGE
+    #     end = start + RESULTS_PER_PAGE
+    #     results = [s.format() for s in selection]
 
-        return results[start:end]
+    #     return results[start:end]
 
     @app.route('/actorForm')
     def actor_form():
         return render_template('actorForm.html')
-        
+
     @app.route('/actors')
     @requires_auth('read:actors')
     def get_actors():
-        actors = Actor.query.order_by(Actor.name).all()
-        selected_actors = get_paginated(request, actors)
+        # actors = Actor.query.order_by(Actor.name).all()
+        selected_actors = Actor.query.order_by(Actor.name).all()
+        # selected_actors = get_paginated(request, actors)
+        selected_actors = [s.format() for s in selected_actors]
         if len(selected_actors) == 0:
             abort(404)
 
         return jsonify({
             'success': True,
             'actors': selected_actors,
-            'total_actors': len(actors),
+            'total_actors': len(selected_actors),
             'actors_displayed': len(selected_actors)
         })
 
@@ -73,18 +79,20 @@ def create_app(test_config=None):
 
         try:
             new_actor = Actor(
-                name=name,
+                name=name.title(),
                 birthdate=birthdate,
                 gender=gender,
                 seeking_work=seeking_work
             )
             new_actor.insert()
-        except Exception:
+        except Exception as e:
+            print(f"Exception {e} in add new actor")
             abort(422)
         return jsonify({
             'success': True,
             'id': new_actor.id,
-            'total_actors': len(Actor.query.all())
+            'total_actors': len(Actor.query.all()),
+            'url': url_for('home')
         })
 
     @app.route('/actors/<int:actor_id>', methods=['PATCH'])
