@@ -117,7 +117,7 @@
         tableRow.innerHTML += "<td>" + actor['gender'] + "</td>"
         tableRow.innerHTML += "<td>" + actor['seeking_work'] + "</td>"
         tableRow.innerHTML += "<td><div class='buttons'>" +
-            "<button class='button' data-id='" + actor['id'] + "'>" +
+            "<button class='button edit-button' data-id='" + actor['id'] + "'>" +
             "Edit</button>" +
             "<button class='button is-danger delete-button' data-id='" + actor['id'] + "'>" +
             "Delete</button></div></td>"
@@ -161,9 +161,16 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then( () => {
-                const actorRow = document.getElementById('actorRow-' + actorId)
-                actorRow.parentNode.removeChild(actorRow)
+            .then(response => response.json())
+            .then(jsonResponse => {
+                console.log(jsonResponse)
+                if (jsonResponse['success']) {
+                    const actorRow = document.getElementById('actorRow-' + actorId)
+                    actorRow.parentNode.removeChild(actorRow)
+                }
+                else {
+                    alert("You do not have permission!")
+                }
             })
             .catch(err => console.log(err))
         }
@@ -207,15 +214,19 @@
                 })
             }
         )
-        .then(response => console.log(response.json()))
+        .then(response => response.json())
         .then(jsonResponse => {
-            location.href = jsonResponse['url']
+            if(!jsonResponse['success']) {
+                alert("You do not have permission to add a new Actor")
+            }
+            else {
+                // clear table
+                actorsTable.innerHTML = "";
+                // repopulate with new actor
+                populateActors()
+            }
         })
-        .catch(err => console.log(err))
-        // clear table of actors
-        // populate rows
-        actorsTable.innerHTML = "";
-        populateActors()
+        .catch(err => console.log(err))        
     }
 </script>
 {% endblock %}
