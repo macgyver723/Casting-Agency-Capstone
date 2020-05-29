@@ -108,14 +108,17 @@ def verify_decode_jwt(token):
                 issuer="https://"+AUTH0_DOMAIN+"/"
             )
         except jwt.ExpiredSignatureError:
+            print("jwt.ExpiredSignatureError")
             raise AuthError({"code": "token_expired",
                             "description": "token is expired"}, 401)
         except jwt.JWTClaimsError:
+            print("JTWClaimsError")
             raise AuthError({"code": "invalid_claims",
                             "description":
                                 "incorrect claims,"
                                 "please check the audience and issuer"}, 401)
-        except Exception:
+        except Exception as e:
+            print(f"Exception {e} invalid_header")
             raise AuthError({"code": "invalid_header",
                             "description":
                                 "Unable to parse authentication"
@@ -146,7 +149,8 @@ def requires_auth(permission=''):
             token = get_token_auth_header()
             try:
                 payload = verify_decode_jwt(token)
-            except Exception:
+            except Exception as e:
+                print(f"Exception {e} in requires_auth")
                 raise AuthError({
                     'code': 'unauthorized',
                     'description': 'could not process token'
