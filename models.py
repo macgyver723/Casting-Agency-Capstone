@@ -78,6 +78,7 @@ class Actor(db.Model, DatabaseItem):
             'id': self.id,
             'name': self.name,
             'age': self.get_age(),
+            'birthdate': str(self.birthdate),
             'gender': self.gender,
             'seeking_work': self.seeking_work
         }
