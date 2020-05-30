@@ -157,7 +157,7 @@
         populateActors()
     }
 
-    function registerEditButton(e) {
+    function registerActorEditButton(e) {
         e.preventDefault()
         const actorId = e.target.dataset['id']
         const actorRow = document.getElementById('actorRow-' + actorId)
@@ -275,11 +275,11 @@
         const editButtons = document.querySelectorAll('.edit-button')
         for (var i = 0; i < editButtons.length; i++) {
             editButtons[i].onclick = function(e) {
-                registerEditButton(e)
+                registerActorEditButton(e)
             }
         }
     }
-    function registerDeleteButton(e) {
+    function registerActorDeleteButton(e) {
         e.preventDefault();
         const actorId = e.target.dataset['id'];
 
@@ -310,7 +310,7 @@
         for (let i = 0; i < deleteButtons.length; i++) {
             const deleteButton = deleteButtons[i];
             deleteButton.onclick = function(e) {
-                registerDeleteButton(e);
+                registerActorDeleteButton(e);
             }
         }
     }
