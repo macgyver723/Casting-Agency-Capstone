@@ -6,12 +6,10 @@
             <div class="column">
                 <h1 class='title'>
                     Actors
-                    <!-- <a id='btnNewActor' href="{{ url_for('actor_form') }}" class="button">New</a> -->
                     <a id='btnNewActor' class="button">New</a>
                 </h1>
                 <div class="container">
                     <section id='newActorForm' class="section hidden">
-                    <!-- <div class="container"> -->
                         <h2 class="title">New Actor</h2>
                         <form class="box">
                             <div class="field">
@@ -102,11 +100,12 @@
 
     // TODO: build a logout feature
     
-    const actorSection = document.getElementById('actorsJSON')
     const actorsTable = document.getElementById('actorsTable')
     const newActorBtn = document.getElementById('btnNewActor')
     const newActorForm = document.getElementById('newActorForm')
     const submitNewActorBtn = document.getElementById('btnSubmit')
+
+    const moviesTable = document.getElementById('moviesTable')
 
     function addActorRow(actor) {
         const tableRow = document.createElement('tr')
@@ -177,16 +176,29 @@
         })
     }
 
-    function togglePrimarySecondaryButtons(row) {
-        let primaryButtons = row.querySelector('.primaryButtons')
-        let secondaryButtons = row.querySelector('.secondaryButtons')
-        if (primaryButtons.classList.contains('hidden')) {
-            primaryButtons.classList.remove('hidden')
-            secondaryButtons.classList.add('hidden')
-        }
-        else {
-            primaryButtons.classList.add('hidden')
-            secondaryButtons.classList.remove('hidden')
+    function registerActorDeleteButton(e) {
+        e.preventDefault();
+        const actorId = e.target.dataset['id'];
+
+        if (confirm("Are you sure you want to delete?")) {
+            fetch('/actors/' + actorId, {
+                method : 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(jsonResponse => {
+                if (jsonResponse['success']) {
+                    const actorRow = document.getElementById('actorRow-' + actorId)
+                    actorRow.parentNode.removeChild(actorRow)
+                }
+                else {
+                    alert("You do not have permission!")
+                }
+            })
+            .catch(err => console.log(err))
         }
     }
 
@@ -271,52 +283,6 @@
         }
     }
 
-    function registerAllEditButtons() {
-        const editButtons = document.querySelectorAll('.edit-button')
-        for (var i = 0; i < editButtons.length; i++) {
-            editButtons[i].onclick = function(e) {
-                registerActorEditButton(e)
-            }
-        }
-    }
-    function registerActorDeleteButton(e) {
-        e.preventDefault();
-        const actorId = e.target.dataset['id'];
-
-        if (confirm("Are you sure you want to delete?")) {
-            fetch('/actors/' + actorId, {
-                method : 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            })
-            .then(response => response.json())
-            .then(jsonResponse => {
-                if (jsonResponse['success']) {
-                    const actorRow = document.getElementById('actorRow-' + actorId)
-                    actorRow.parentNode.removeChild(actorRow)
-                }
-                else {
-                    alert("You do not have permission!")
-                }
-            })
-            .catch(err => console.log(err))
-        }
-    }
-
-    function registerAllDeleteButtons() {
-        const deleteButtons = document.querySelectorAll('.delete-button');
-        for (let i = 0; i < deleteButtons.length; i++) {
-            const deleteButton = deleteButtons[i];
-            deleteButton.onclick = function(e) {
-                registerActorDeleteButton(e);
-            }
-        }
-    }
-    
-    
-
     newActorBtn.onclick = function(e) {
         e.preventDefault()
         newActorForm.classList.remove('hidden')
@@ -353,6 +319,44 @@
         .catch(err => console.log(err))        
     }
 
+
+    // helper functions for movies and actors
+
+    function registerAllEditButtons() {
+        const editButtons = document.querySelectorAll('.edit-button')
+        for (var i = 0; i < editButtons.length; i++) {
+            editButtons[i].onclick = function(e) {
+                registerActorEditButton(e)
+            }
+        }
+    }
+    
+    function registerAllDeleteButtons() {
+        const deleteButtons = document.querySelectorAll('.delete-button');
+        for (let i = 0; i < deleteButtons.length; i++) {
+            const deleteButton = deleteButtons[i];
+            deleteButton.onclick = function(e) {
+                registerActorDeleteButton(e);
+            }
+        }
+    }
+    
+    function togglePrimarySecondaryButtons(row) {
+        let primaryButtons = row.querySelector('.primaryButtons')
+        let secondaryButtons = row.querySelector('.secondaryButtons')
+        if (primaryButtons.classList.contains('hidden')) {
+            primaryButtons.classList.remove('hidden')
+            secondaryButtons.classList.add('hidden')
+        }
+        else {
+            primaryButtons.classList.add('hidden')
+            secondaryButtons.classList.remove('hidden')
+        }
+    }
+    
+    // movies methods
+
     populateActors()
+
 </script>
 {% endblock %}
