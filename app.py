@@ -54,9 +54,7 @@ def create_app(test_config=None):
     @app.route('/actors')
     @requires_auth('read:actors')
     def get_actors():
-        # actors = Actor.query.order_by(Actor.name).all()
         selected_actors = Actor.query.order_by(Actor.name).all()
-        # selected_actors = get_paginated(request, actors)
         selected_actors = [s.format() for s in selected_actors]
         if len(selected_actors) == 0:
             abort(404)
@@ -65,7 +63,6 @@ def create_app(test_config=None):
             'success': True,
             'actors': selected_actors,
             'total_actors': len(selected_actors),
-            'actors_displayed': len(selected_actors)
         })
     
     @app.route('/actor/<int:actor_id>')
@@ -155,16 +152,14 @@ def create_app(test_config=None):
     @requires_auth('read:movies')
     def get_movies():
         movies = Movie.query.order_by(Movie.genre).all()
-        seleted_movies = get_paginated(request, movies)
-
-        if len(seleted_movies) == 0:
+        movies = [m.format() for m in movies]
+        if len(movies) == 0:
             abort(404)
 
         return jsonify({
             'success': True,
-            'movies': seleted_movies,
+            'movies': movies,
             'total_movies': len(movies),
-            'movies_displayed': len(seleted_movies)
         })
 
     @app.route('/movies', methods=['POST'])
