@@ -67,6 +67,19 @@ def create_app(test_config=None):
             'total_actors': len(selected_actors),
             'actors_displayed': len(selected_actors)
         })
+    
+    @app.route('/actor/<int:actor_id>')
+    @requires_auth('read:actors')
+    def get_actor(actor_id):
+        actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
+
+        if actor is None:
+            abort(404)
+        
+        return jsonify({
+            'success': True,
+            'actor': actor.format()
+        })
 
     @app.route('/actors', methods=['POST'])
     @requires_auth('add:actors')
@@ -110,7 +123,7 @@ def create_app(test_config=None):
 
         try:
             actor.name = name if name else actor.name
-            actor.dirthdate = birthdate if birthdate else actor.birthdate
+            actor.birthdate = birthdate if birthdate else actor.birthdate
             actor.gender = gender if gender else actor.gender
             actor.seeking_work = bool(seeking_work) if seeking_work \
                 else actor.seeking_work
