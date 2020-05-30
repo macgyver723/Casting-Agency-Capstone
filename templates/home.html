@@ -102,7 +102,6 @@
 
     // TODO: build a logout feature
     
-
     const actorSection = document.getElementById('actorsJSON')
     const actorsTable = document.getElementById('actorsTable')
     const newActorBtn = document.getElementById('btnNewActor')
@@ -112,21 +111,23 @@
     function addActorRow(actor) {
         const tableRow = document.createElement('tr')
         tableRow.setAttribute('id', "actorRow-" + actor['id'])
-        tableRow.innerHTML = "<td>" + actor['name'] + "</td>"
-        tableRow.innerHTML += "<td>" + actor['age'] + "</td>"
-        tableRow.innerHTML += "<td>" + actor['gender'] + "</td>"
-        tableRow.innerHTML += "<td>" + actor['seeking_work'] + "</td>"
-        tableRow.innerHTML += "<td><div class='buttons'>" +
+        tableRow.innerHTML = "<td class='actorName'>" + actor['name'] + "</td>"
+        tableRow.innerHTML += "<td class='actorAge'>" + actor['age'] + "</td>"
+        tableRow.innerHTML += "<td class='actorGender'>" + actor['gender'] + "</td>"
+        tableRow.innerHTML += "<td class='actorSeekingWork'>" + actor['seeking_work'] + "</td>"
+        tableRow.innerHTML += "<td><div class='buttons primaryButtons'>" +
             "<button class='button edit-button' data-id='" + actor['id'] + "'>" +
             "Edit</button>" +
             "<button class='button is-danger delete-button' data-id='" + actor['id'] + "'>" +
-            "Delete</button></div></td>"
+            "Delete</button></div>"
+        tableRow.innerHTML += "<div class='buttons secondaryButtons hidden'>" +
+            "<button class='button is-link actorSaveEdit' data-id='" + actor['id'] + "'>" +
+            "Save</button>" +
+            "<button class='button is-warning actorCancelEdit' data-id='" + actor['id'] + "'>" +
+            "Cancel</button></div></td>"
         actorsTable.appendChild(tableRow)
     }
 
-    function editActor(rowId) {
-
-    }
     // TODO: figure out how to redirect to login if expired token
     
     async function populateActors() {
@@ -145,12 +146,141 @@
         })
         .then( () => {
             registerAllDeleteButtons()
+            registerAllEditButtons()
         })
     }
 
+    function resetActorTable() {
+        // clear table
+        actorsTable.innerHTML = "";
+        // repopulate with new actor
+        populateActors()
+    }
+
+    function registerEditButton(e) {
+        e.preventDefault()
+        const actorId = e.target.dataset['id']
+        const actorRow = document.getElementById('actorRow-' + actorId)
+        fetch(
+            '/actor/' + actorId, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            }            
+        )
+        .then(response => response.json())
+        .then(jsonResponse => {
+            var actor = jsonResponse['actor']
+            editActor(actorRow, actor)
+        })
+    }
+
+    function togglePrimarySecondaryButtons(row) {
+        let primaryButtons = row.querySelector('.primaryButtons')
+        let secondaryButtons = row.querySelector('.secondaryButtons')
+        if (primaryButtons.classList.contains('hidden')) {
+            primaryButtons.classList.remove('hidden')
+            secondaryButtons.classList.add('hidden')
+        }
+        else {
+            primaryButtons.classList.add('hidden')
+            secondaryButtons.classList.remove('hidden')
+        }
+    }
+
+    function makeRowEditable(row, actor) {
+        togglePrimarySecondaryButtons(row)
+        var name;
+        var birthdate;
+        var gender;
+        var seekingWork;
+        name = actor['name']
+        birthdate = actor['birthdate']
+        gender = actor['gender']
+        seekingWork = actor['seeking_work'].toString()
+
+        // make tds into editable fields
+        var nameCell = row.querySelector('.actorName')
+        var ageCell = row.querySelector('.actorAge')
+        var genderCell = row.querySelector('.actorGender')
+        var seekingWorkCell = row.querySelector('.actorSeekingWork')
+
+        nameCell.innerHTML = "<input name='name' type='text' value='" + name + "'>"
+        ageCell.innerHTML = "<input name='birthdate' type='date' value='" + birthdate.substring(0,10) + "'>"
+        var genderText = "<select name='gender'><option value='M'>M</option><option value='F'>F</option><option value='Other'>Other</option>"
+        genderCell.innerHTML = genderText
+                                        .substring(0, genderText.indexOf(gender) + gender.length + 1) + // +1 for quotation
+                                        " selected" +
+                                        genderText.substring(genderText.indexOf(gender) + gender.length + 1)
+        var seekingWorkText = "<select name='seekingWork'><option value='true'>true</option><option value='false'>false</option>"
+        seekingWorkCell.innerHTML = seekingWorkText
+                                        .substring(0, seekingWorkText.indexOf(seekingWork) + seekingWork.length + 1) + // +1 for quotation
+                                        " selected" +
+                                        seekingWorkText.substring(seekingWorkText.indexOf(seekingWork) + seekingWork.length + 1)
+        // TODO: do something with edit button like submit
+        // TODO: make other fields editable
+
+    }
+
+    function patchActor(e, row, actorId) {
+        e.preventDefault()
+        var name = row.querySelector('input[name="name"]').value
+        var birthdate = row.querySelector('input[name="birthdate"]').value
+        var gender = row.querySelector('select[name="gender"]').value
+        var seekingWork = row.querySelector('select[name="seekingWork"]').value
+
+        fetch(
+            '/actors/' + actorId, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    'name' : name,
+                    'birthdate': birthdate,
+                    'gender': gender,
+                    'seekingWork': seekingWork
+                })
+            }
+        )
+        .then(response => response.json())
+        .then(jsonResponse => {
+            if(!jsonResponse['success']) {
+                alert("You do not have permission to edit an Actor!")
+            }
+            else {
+                resetActorTable()
+            }
+        })
+    }
+
+    function editActor(row, actor) {
+        makeRowEditable(row, actor)
+        var editButton = row.querySelector('.actorSaveEdit')
+        var cancelButton = row.querySelector('.actorCancelEdit')
+
+        editButton.onclick = function(e) {
+            patchActor(e, row, actor['id'])
+        }
+
+        cancelButton.onclick = function(e) {
+            resetActorTable()
+        }
+    }
+
+    function registerAllEditButtons() {
+        const editButtons = document.querySelectorAll('.edit-button')
+        for (var i = 0; i < editButtons.length; i++) {
+            editButtons[i].onclick = function(e) {
+                registerEditButton(e)
+            }
+        }
+    }
     function registerDeleteButton(e) {
         e.preventDefault();
-        console.log('event', e);
         const actorId = e.target.dataset['id'];
 
         if (confirm("Are you sure you want to delete?")) {
@@ -163,7 +293,6 @@
             })
             .then(response => response.json())
             .then(jsonResponse => {
-                console.log(jsonResponse)
                 if (jsonResponse['success']) {
                     const actorRow = document.getElementById('actorRow-' + actorId)
                     actorRow.parentNode.removeChild(actorRow)
@@ -178,7 +307,6 @@
 
     function registerAllDeleteButtons() {
         const deleteButtons = document.querySelectorAll('.delete-button');
-        console.log("registering " + deleteButtons.length + " delete buttons")
         for (let i = 0; i < deleteButtons.length; i++) {
             const deleteButton = deleteButtons[i];
             deleteButton.onclick = function(e) {
@@ -186,9 +314,8 @@
             }
         }
     }
-    // populate actors of page1
-    // populate button links for pages
-    populateActors()
+    
+    
 
     newActorBtn.onclick = function(e) {
         e.preventDefault()
@@ -220,13 +347,12 @@
                 alert("You do not have permission to add a new Actor")
             }
             else {
-                // clear table
-                actorsTable.innerHTML = "";
-                // repopulate with new actor
-                populateActors()
+                resetActorTable()
             }
         })
         .catch(err => console.log(err))        
     }
+
+    populateActors()
 </script>
 {% endblock %}
