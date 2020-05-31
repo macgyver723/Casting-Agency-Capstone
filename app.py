@@ -162,6 +162,16 @@ def create_app(test_config=None):
             'total_movies': len(movies),
         })
 
+    @app.route('/movies/<int:movie_id>')
+    @requires_auth('read:movies')
+    def get_movie(movie_id):
+        movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
+        if movie is None:
+            abort(404)
+        return jsonify({
+            'success': True,
+            'movie': movie.format()
+        })
     @app.route('/movies', methods=['POST'])
     @requires_auth('add:movies')
     def add_movie():
@@ -172,9 +182,9 @@ def create_app(test_config=None):
 
         try:
             new_movie = Movie(
-                title=title,
+                title=title.title(),
                 release_date=release_date,
-                genre=genre
+                genre=genre.title()
                 )
             new_movie.insert()
         except Exception:
@@ -199,10 +209,10 @@ def create_app(test_config=None):
         genre = data.get('genre', None)
 
         try:
-            movie.title = title if title else movie.title
+            movie.title = title.title() if title else movie.title
             movie.release_date = release_date if release_date \
                 else movie.release_date
-            movie.genre = genre if genre else movie.genre
+            movie.genre = genre.title() if genre else movie.genre
             movie.update()
         except Exception:
             abort(422)
