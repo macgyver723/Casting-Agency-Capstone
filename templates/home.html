@@ -107,6 +107,7 @@
                                 <th>Title</th>
                                 <th>Release Date</th>
                                 <th>Genre</th>
+                                <th>Edit/Delete</th>
                             </tr>
                         </thead>
                         <tbody id="moviesTable">
@@ -122,7 +123,9 @@
 
 {% block javascript %}
 <script>
-    const JWTS_LOCAL_KEY = 'JWTS_LOCAL_KEY';
+    const JWTS_LOCAL_KEY = 'JWTS_LOCAL_KEY'
+    const MOVIES_TYPE = 'movies'
+    const ACTORS_TYPE = 'actors'
 
     var token = "";
     // check if token is in local storage
@@ -152,6 +155,8 @@
     const newMovieForm = document.getElementById('newMovieForm')
     const submitNewMovieBtn = document.getElementById('btnSubmitMovie')
 
+    // actor-only methods
+
     function addActorRow(actor) {
         const tableRow = document.createElement('tr')
         tableRow.setAttribute('id', "actorRow-" + actor['id'])
@@ -165,21 +170,19 @@
             "<button class='button is-danger delete-button' data-id='" + actor['id'] + "'>" +
             "Delete</button></div>"
         tableRow.innerHTML += "<div class='buttons secondaryButtons hidden'>" +
-            "<button class='button is-link actorSaveEdit' data-id='" + actor['id'] + "'>" +
+            "<button class='button is-link saveEdit' data-id='" + actor['id'] + "'>" +
             "Save</button>" +
-            "<button class='button is-warning actorCancelEdit' data-id='" + actor['id'] + "'>" +
+            "<button class='button is-warning cancelEdit' data-id='" + actor['id'] + "'>" +
             "Cancel</button></div></td>"
         actorsTable.appendChild(tableRow)
 
-        tableRow.querySelectorAll('.edit-button').onclick = function(e) {
-            registerActorEditButton(e)
+        tableRow.querySelector('.edit-button').onclick = function(e) {
+            registerEditButton(e, ACTORS_TYPE)
         }
         tableRow.querySelector('.delete-button').onclick = function(e) {
-            registerActorDeleteButton(e)
+            registerDeleteButton(e, ACTORS_TYPE)
         }
     }
-
-    // TODO: figure out how to redirect to login if expired token
     
     async function populateActors() {
         await fetch(
@@ -209,62 +212,12 @@
         }
     }
 
-    function registerActorEditButton(e) {
-        e.preventDefault()
-        const actorId = e.target.dataset['id']
-        const actorRow = document.getElementById('actorRow-' + actorId)
-        fetch(
-            '/actor/' + actorId, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            }            
-        )
-        .then(response => response.json())
-        .then(jsonResponse => {
-            var actor = jsonResponse['actor']
-            editActor(actorRow, actor)
-        })
-    }
-
-    function registerActorDeleteButton(e) {
-        e.preventDefault();
-        const actorId = e.target.dataset['id'];
-
-        if (confirm("Are you sure you want to delete?")) {
-            fetch('/actors/' + actorId, {
-                method : 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            })
-            .then(response => response.json())
-            .then(jsonResponse => {
-                if (jsonResponse['success']) {
-                    const actorRow = document.getElementById('actorRow-' + actorId)
-                    actorRow.parentNode.removeChild(actorRow)
-                }
-                else {
-                    alert("You do not have permission!")
-                }
-            })
-            .catch(err => console.log(err))
-        }
-    }
-
-    function makeRowEditable(row, actor) {
+    function makeActorRowEditable(row, actor) {
         togglePrimarySecondaryButtons(row)
-        var name;
-        var birthdate;
-        var gender;
-        var seekingWork;
-        name = actor['name']
-        birthdate = actor['birthdate']
-        gender = actor['gender']
-        seekingWork = actor['seeking_work'].toString()
+        var name = actor['name']
+        var birthdate = actor['birthdate'].substring(0,10)
+        var gender = actor['gender']
+        var seekingWork = actor['seeking_work'].toString()
 
         // make tds into editable fields
         var nameCell = row.querySelector('.actorName')
@@ -273,7 +226,7 @@
         var seekingWorkCell = row.querySelector('.actorSeekingWork')
 
         nameCell.innerHTML = "<input name='name' type='text' value='" + name + "'>"
-        ageCell.innerHTML = "<input name='birthdate' type='date' value='" + birthdate.substring(0,10) + "'>"
+        ageCell.innerHTML = "<input name='birthdate' type='date' value='" + birthdate + "'>"
         var genderText = "<select name='gender'><option value='M'>M</option><option value='F'>F</option><option value='Other'>Other</option>"
         genderCell.innerHTML = genderText
                                         .substring(0, genderText.indexOf(gender) + gender.length + 1) + // +1 for quotation
@@ -284,8 +237,6 @@
                                         .substring(0, seekingWorkText.indexOf(seekingWork) + seekingWork.length + 1) + // +1 for quotation
                                         " selected" +
                                         seekingWorkText.substring(seekingWorkText.indexOf(seekingWork) + seekingWork.length + 1)
-        // TODO: do something with edit button like submit
-        // TODO: make other fields editable
 
     }
 
@@ -317,23 +268,9 @@
                 alert("You do not have permission to edit an Actor!")
             }
             else {
-                resetActorTable()
+                resetTable(actorsTable)
             }
         })
-    }
-
-    function editActor(row, actor) {
-        makeRowEditable(row, actor)
-        var editButton = row.querySelector('.actorSaveEdit')
-        var cancelButton = row.querySelector('.actorCancelEdit')
-
-        editButton.onclick = function(e) {
-            patchActor(e, row, actor['id'])
-        }
-
-        cancelButton.onclick = function(e) {
-            resetActorTable()
-        }
     }
 
     newActorBtn.onclick = function(e) {
@@ -372,7 +309,6 @@
         .catch(err => console.log(err))        
     }
 
-
     // helper functions for movies and actors
 
     function togglePrimarySecondaryButtons(row) {
@@ -388,13 +324,17 @@
         }
     }
     
-    // movies methods
+    function getSingular(itemType) {
+        return itemType.substring(0, itemType.length-1)
+    }
+    
+    // movie-only methods
 
     function addMovieRow(movie) {
         const tableRow = document.createElement('tr')
         tableRow.setAttribute('id', 'movieRow-' + movie['id'])
         tableRow.innerHTML = "<td class='movieTitle'>" + movie['title'] + "</td"
-        tableRow.innerHTML += "<td class='movieRleaseDate'>" + movie['release_date'] + "</td"
+        tableRow.innerHTML += "<td class='movieReleaseDate'>" + movie['release_date'] + "</td"
         tableRow.innerHTML += "<td class='movieGenre'>" + movie['genre'] + "</td>"
         tableRow.innerHTML += "<td><div class='buttons primaryButtons'>" +
             "<button class='button edit-button' data-id='" + movie['id'] + "'>" +
@@ -402,17 +342,17 @@
             "<button class='button is-danger delete-button' data-id='" + movie['id'] + "'>" +
             "Delete</button></div>"
         tableRow.innerHTML += "<div class='buttons secondaryButtons hidden'>" +
-            "<button class='button is-link movieSaveEdit' data-id='" + movie['id'] + "'>" +
+            "<button class='button is-link saveEdit' data-id='" + movie['id'] + "'>" +
             "Save</button>" +
-            "<button class='button is-warning movieCancelEdit' data-id='" + movie['id'] + "'>" +
+            "<button class='button is-warning cancelEdit' data-id='" + movie['id'] + "'>" +
             "Cancel</button></div></td>"
         moviesTable.appendChild(tableRow)
 
-        tableRow.querySelectorAll('.edit-button').onclick = function(e) {
-            registerMovieEditButton(e)
+        tableRow.querySelector('.edit-button').onclick = function(e) {
+            registerEditButton(e, MOVIES_TYPE)
         }
         tableRow.querySelector('.delete-button').onclick = function(e) {
-            registerMovieDeleteButton(e)
+            registerDeleteButton(e, MOVIES_TYPE)
         }
     }
 
@@ -431,18 +371,52 @@
             jsonResponse['movies'].forEach(addMovieRow)
         })
     }
-    
-    function resetMovieTable() {
+
+    function makeMovieRowEditable(row, movie) {
+        togglePrimarySecondaryButtons(row)
+        var title = movie['title'];
+        var releaseDate = movie['release_date'].toString().substring(0,10);
+        var genre = movie['genre'];
         
+        // make tds into editable fields
+        var titleCell = row.querySelector('.movieTitle')
+        var releaseDateCell = row.querySelector('.movieReleaseDate')
+        var genreCell = row.querySelector('.movieGenre')
+
+        titleCell.innerHTML = "<input name='title' type='text', value='" + title + "'>"
+        releaseDateCell.innerHTML = "<input name='releaseDate' type='date' value='" + releaseDate + "'>"
+        genreCell.innerHTML = "<input name='genre' type='text' value='" + genre + "'>"
     }
-
-    function registerMovieEditButton(e) {
+    
+    function patchMovie(e, row, movieId) {
         e.preventDefault()
-        const movieId = e.target.dataset['id']
-        const movieRow = document.getElementById('movieRow-' + movieId)
+        var title = row.querySelector('input[name="title"]').value
+        var releaseDate = row.querySelector('input[name="releaseDate"]').value
+        var genre = row.querySelector('input[name="genre"]').value
 
-        // TODO: START HERE 
-
+        fetch (
+            '/movies/' + movieId, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    'title' : title,
+                    'releaseDate': releaseDate,
+                    'genre': genre
+                })
+            }
+        )
+        .then(response => response.json())
+        .then(jsonResponse => {
+            if(!jsonResponse['success']) {
+                alert("your do not have permission to edit a Movie!")
+            }
+            else {
+                resetTable(moviesTable)
+            }
+        })
     }
 
     newMovieBtn.onclick = function(e) {
@@ -477,6 +451,99 @@
             }
         })
     }
+
+    // actor & movie methods
+
+    function registerEditButton(e, itemType) {
+        e.preventDefault()
+        console.log('registering edit button of type:' + itemType)
+
+        const id = e.target.dataset['id']
+        const rowName = itemType == 'actors' ? 'actorRow-' : 'movieRow-'
+        const tableRow = document.getElementById(rowName + id)
+        console.log("tableRow:")
+        console.log(tableRow)
+        fetch (
+            '/' + itemType + '/' + id, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            }
+        )
+        .then(response => response.json())
+        .then(jsonResponse => {
+            var item = jsonResponse[getSingular(itemType)]
+            editItem(tableRow, item, itemType)
+        })
+
+    }
+
+    function registerDeleteButton(e, itemType) {
+        e.preventDefault()
+        const id = e.target.dataset['id']
+
+        if (confirm("Are you sure you want to delete?")) {
+            fetch('/' + itemType + '/' + id, {
+                method : 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(jsonResponse => {
+                if(jsonResponse['success']) {
+                    const tableRow = document.getElementById(getSingular(itemType) + "Row-" + id)
+                    tableRow.parentNode.removeChild(tableRow)
+                }
+                else {
+                    alert("You do not have permission to delete " + itemType)
+                }
+            })
+            .catch(err => console.log(err))
+        }
+    }
+    
+    function editItem(row, item, itemType) {
+        console.log("editing item:")
+        console.log(item)
+        if (itemType == MOVIES_TYPE) {
+            makeMovieRowEditable(row, item)
+        }
+        else {
+            makeActorRowEditable(row, item)
+        }
+        var saveButton = row.querySelector('.saveEdit')
+        var cancelButton = row.querySelector('.cancelEdit')
+
+        saveButton.onclick = function(e) {
+            console.log("saveButton clicked")
+            console.log(item)
+            if (itemType == MOVIES_TYPE) {
+                // item is a movie
+                patchMovie(e, row, item['id'])
+            }
+            else {
+                // item is an actor
+                patchActor(e, row, item['id'])
+            }
+        }
+
+        cancelButton.onclick = function(e) {
+            if (itemType == MOVIES_TYPE) {
+                // item is a movie
+                resetTable(moviesTable)
+            }
+            else {
+                // item is an actor
+                resetTable(actorsTable)
+            }
+        }
+    }
+   
+    // on first load, populate the tables
     populateActors()
     populateMovies()
 
