@@ -160,26 +160,33 @@
     function addActorRow(actor) {
         const tableRow = document.createElement('tr')
         tableRow.setAttribute('id', "actorRow-" + actor['id'])
-        tableRow.innerHTML = "<td class='actorName'>" + actor['name'] + "</td>"
-        tableRow.innerHTML += "<td class='actorAge'>" + actor['age'] + "</td>"
-        tableRow.innerHTML += "<td class='actorGender'>" + actor['gender'] + "</td>"
-        tableRow.innerHTML += "<td class='actorSeekingWork'>" + actor['seeking_work'] + "</td>"
-        tableRow.innerHTML += "<td><div class='buttons primaryButtons'>" +
-            "<button class='button edit-button' data-id='" + actor['id'] + "'>" +
+
+        let tableRowHTML = 
+            "<td class='actorName'>" + actor['name'] + "</td>"
+        tableRowHTML += 
+            "<td class='actorAge'>" + actor['age'] + "</td>"
+        tableRowHTML += 
+            "<td class='actorGender'>" + actor['gender'] + "</td>"
+        tableRowHTML += 
+            "<td class='actorSeekingWork'>" + actor['seeking_work'] + "</td>"
+        tableRowHTML += 
+            "<td><div class='buttons'>" +
+            "<button class='button editButton' data-id='" + actor['id'] + "'>" +
             "Edit</button>" +
-            "<button class='button is-danger delete-button' data-id='" + actor['id'] + "'>" +
-            "Delete</button></div>"
-        tableRow.innerHTML += "<div class='buttons secondaryButtons hidden'>" +
-            "<button class='button is-link saveEdit' data-id='" + actor['id'] + "'>" +
+            "<button class='button is-danger deleteButton' data-id='" + actor['id'] + "'>" +
+            "Delete</button>" +   
+            "<button class='button is-link saveButton hidden' data-id='" + actor['id'] + "'>" +
             "Save</button>" +
-            "<button class='button is-warning cancelEdit' data-id='" + actor['id'] + "'>" +
+            "<button class='button is-warning cancelButton hidden' data-id='" + actor['id'] + "'>" +
             "Cancel</button></div></td>"
+
+        tableRow.innerHTML = tableRowHTML
         actorsTable.appendChild(tableRow)
 
-        tableRow.querySelector('.edit-button').onclick = function(e) {
+        tableRow.querySelector('.editButton').onclick = function(e) {
             registerEditButton(e, ACTORS_TYPE)
         }
-        tableRow.querySelector('.delete-button').onclick = function(e) {
+        tableRow.querySelector('.deleteButton').onclick = function(e) {
             registerDeleteButton(e, ACTORS_TYPE)
         }
     }
@@ -312,15 +319,22 @@
     // helper functions for movies and actors
 
     function togglePrimarySecondaryButtons(row) {
-        let primaryButtons = row.querySelector('.primaryButtons')
-        let secondaryButtons = row.querySelector('.secondaryButtons')
-        if (primaryButtons.classList.contains('hidden')) {
-            primaryButtons.classList.remove('hidden')
-            secondaryButtons.classList.add('hidden')
+        let editButton = row.querySelector('.editButton')
+        let deleteButton = row.querySelector('.deleteButton') 
+        let saveButton = row.querySelector('.saveButton')
+        let cancelButton = row.querySelector('.cancelButton')
+        
+        if (editButton.classList.contains('hidden')) {
+            editButton.classList.remove('hidden')
+            deleteButton.classList.remove('hidden')
+            saveButton.classList.add('hidden')
+            cancelButton.classList.add('hidden')
         }
         else {
-            primaryButtons.classList.add('hidden')
-            secondaryButtons.classList.remove('hidden')
+            editButton.classList.add('hidden')
+            deleteButton.classList.add('hidden')
+            saveButton.classList.remove('hidden')
+            cancelButton.classList.remove('hidden')
         }
     }
     
@@ -333,25 +347,31 @@
     function addMovieRow(movie) {
         const tableRow = document.createElement('tr')
         tableRow.setAttribute('id', 'movieRow-' + movie['id'])
-        tableRow.innerHTML = "<td class='movieTitle'>" + movie['title'] + "</td"
-        tableRow.innerHTML += "<td class='movieReleaseDate'>" + movie['release_date'] + "</td"
-        tableRow.innerHTML += "<td class='movieGenre'>" + movie['genre'] + "</td>"
-        tableRow.innerHTML += "<td><div class='buttons primaryButtons'>" +
-            "<button class='button edit-button' data-id='" + movie['id'] + "'>" +
+
+        let tableRowHTML = 
+            "<td class='movieTitle'>" + movie['title'] + "</td>"
+        tableRowHTML += 
+            "<td class='movieReleaseDate'>" + movie['release_date'].substring(0,10) + "</td>"
+        tableRowHTML += 
+            "<td class='movieGenre'>" + movie['genre'] + "</td>"
+        tableRowHTML += 
+            "<td><div class='buttons'>" +
+            "<button class='button editButton' data-id='" + movie['id'] + "'>" +
             "Edit</button>" +
-            "<button class='button is-danger delete-button' data-id='" + movie['id'] + "'>" +
-            "Delete</button></div>"
-        tableRow.innerHTML += "<div class='buttons secondaryButtons hidden'>" +
-            "<button class='button is-link saveEdit' data-id='" + movie['id'] + "'>" +
+            "<button class='button is-danger deleteButton' data-id='" + movie['id'] + "'>" +
+            "Delete</button>" +
+            "<button class='button is-link saveButton hidden' data-id='" + movie['id'] + "'>" +
             "Save</button>" +
-            "<button class='button is-warning cancelEdit' data-id='" + movie['id'] + "'>" +
+            "<button class='button is-warning cancelButton hidden' data-id='" + movie['id'] + "'>" +
             "Cancel</button></div></td>"
+        
+        tableRow.innerHTML = tableRowHTML
         moviesTable.appendChild(tableRow)
 
-        tableRow.querySelector('.edit-button').onclick = function(e) {
+        tableRow.querySelector('.editButton').onclick = function(e) {
             registerEditButton(e, MOVIES_TYPE)
         }
-        tableRow.querySelector('.delete-button').onclick = function(e) {
+        tableRow.querySelector('.deleteButton').onclick = function(e) {
             registerDeleteButton(e, MOVIES_TYPE)
         }
     }
@@ -515,8 +535,8 @@
         else {
             makeActorRowEditable(row, item)
         }
-        var saveButton = row.querySelector('.saveEdit')
-        var cancelButton = row.querySelector('.cancelEdit')
+        var saveButton = row.querySelector('.saveButton')
+        var cancelButton = row.querySelector('.cancelButton')
 
         saveButton.onclick = function(e) {
             console.log("saveButton clicked")
