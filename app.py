@@ -65,7 +65,7 @@ def create_app(test_config=None):
             'total_actors': len(selected_actors),
         })
     
-    @app.route('/actor/<int:actor_id>')
+    @app.route('/actors/<int:actor_id>')
     @requires_auth('read:actors')
     def get_actor(actor_id):
         actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
