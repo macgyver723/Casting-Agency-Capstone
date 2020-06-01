@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, jsonify, render_template, redirect, url_for
+from flask import Flask, request, abort, jsonify, render_template, url_for
 from flask_cors import CORS
 
 from models import setup_db, Actor, Movie
@@ -25,8 +25,6 @@ def create_app(test_config=None):
     def favicon():
         return ""
 
-    RESULTS_PER_PAGE = 10
-
     @app.after_request
     def after_request(response):
         response.headers.add(
@@ -38,18 +36,6 @@ def create_app(test_config=None):
             "GET,PUT,POST,DELETE,PATCH,OPTIONS"
             )
         return response
-
-    # def get_paginated(request, selection):
-    #     page = request.args.get('page', 1, type=int)
-    #     start = (page - 1) * RESULTS_PER_PAGE
-    #     end = start + RESULTS_PER_PAGE
-    #     results = [s.format() for s in selection]
-
-    #     return results[start:end]
-
-    @app.route('/actorForm')
-    def actor_form():
-        return render_template('actorForm.html')
 
     @app.route('/actors')
     @requires_auth('read:actors')
