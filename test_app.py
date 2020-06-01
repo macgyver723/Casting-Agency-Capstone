@@ -53,7 +53,7 @@ class CastingAgencyTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-        
+
     def tearDown(self):
         '''Executed after each test'''
         pass
@@ -66,7 +66,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['actors'])
         self.assertTrue(data['total_actors'])
-    
+
     def test_get_actors_no_permissions(self):
         res = self.client().get('/actors')
         data = json.loads(res.data)
@@ -74,7 +74,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         self.assertEqual(data['success'], False)
         self.assertTrue(data['message'])
-    
+
     def test_get_actor_by_id(self):
         res = self.client().get('/actors/38', headers=self.assistant_headers)
         data = json.loads(res.data)
@@ -82,7 +82,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['actor'])
-    
+
     def test_get_actor_by_id_without_permissions(self):
         res = self.client().get('/actors/38')
         data = json.loads(res.data)
@@ -203,7 +203,7 @@ class CastingAgencyTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 403)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message']['code'], 'unauthorized')    
+        self.assertEqual(data['message']['code'], 'unauthorized')
 
     def test_modify_movie_casting_director(self):
         res = self.client().patch('/movies/8',
@@ -224,7 +224,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 403)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message']['code'], 'unauthorized')
-    
+
     def test_delete_movie_executive_producer(self):
         res = self.client().delete('/movies/9',
                                    headers=self.producer_headers)
@@ -233,7 +233,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted_title'], "Saw 31")
-    
+
     def test_delete_movie_unauthorized_casting_director(self):
         res = self.client().delete('/movies/8',
                                    headers=self.director_headers)
