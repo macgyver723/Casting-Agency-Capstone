@@ -55,16 +55,16 @@ Endpoints are permission-specific based upon roles (see above).
 
 ### Endpoints
 
-- [`GET /actors`](#GET-/actors)
-- [`GET /actors/<movie_id>`](#GET-/actors/<actor_id>)
-- [`POST /actors`](#POST-/actors)
-- [`PATCH /actors/<actor_id>`](#PATCH-/actors/<actor_id>)
-- [`DELETE /actors/<actor_id>`](#DELETE-/actors/<actor_id>)
-- [`GET /movies`](#GET-/movies)
-- [`GET /movies/<movie_id>`](#GET-/movies/<movie_id>)
-- [`POST /movies`](#POST-/movies)
-- [`PATCH /movies/<movie_id>`](#PATCH-/movies/<movie_id>)
-- [`DELETE /movies/<movie_id>`](#DELETE-/movies/<movie_id>)
+- [`GET /actors`](#get-actors)
+- [`GET /actors/<movie_id>`](#get-actorsactor_id)
+- [`POST /actors`](#post-actors)
+- [`PATCH /actors/<actor_id>`](#patch-actorsactor_id)
+- [`DELETE /actors/<actor_id>`](#delete-actorsactor_id)
+- [`GET /movies`](#get-movies)
+- [`GET /movies/<movie_id>`](#get-moviesmovie_id)
+- [`POST /movies`](#post-movies)
+- [`PATCH /movies/<movie_id>`](#patch-moviesmovie_id)
+- [`DELETE /movies/<movie_id>`](#delete-moviesmovie_id)
 
 ### Error Handling
 
