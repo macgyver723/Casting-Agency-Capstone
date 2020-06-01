@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, abort, jsonify, render_template
 from flask_cors import CORS
 
@@ -13,7 +14,7 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
-        return render_template("index.html")
+        return render_template("index.html", login_url=os.environ['LOGIN_URL'])
 
     @app.route('/home')
     def home():
