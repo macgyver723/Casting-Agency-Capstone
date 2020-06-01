@@ -4,7 +4,7 @@ import json
 from flask_sqlalchemy import SQLAlchemy
 
 from app import create_app
-from models import setup_db, Actor, Movie
+from models import setup_db, Actor
 
 
 class CastingAgencyTestCase(unittest.TestCase):
@@ -242,6 +242,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 403)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message']['code'], 'unauthorized')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

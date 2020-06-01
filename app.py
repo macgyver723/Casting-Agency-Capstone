@@ -1,10 +1,8 @@
-from flask import Flask, request, abort, jsonify, render_template, url_for
+from flask import Flask, request, abort, jsonify, render_template
 from flask_cors import CORS
 
 from models import setup_db, Actor, Movie
 from auth import AuthError, requires_auth
-
-# https://fsnd-stefan.auth0.com/authorize?audience=casting-agency&response_type=token&client_id=MKNzsmrLb5LVoFNvHBaR53rkIE0f5TGm&redirect_uri=http://0.0.0.0:8080/callback
 
 
 def create_app(test_config=None):
@@ -16,11 +14,11 @@ def create_app(test_config=None):
     @app.route('/')
     def index():
         return render_template("index.html")
-    
+
     @app.route('/home')
     def home():
         return render_template('home.html')
-    
+
     @app.route('/favicon.ico')
     def favicon():
         return ""
@@ -50,7 +48,7 @@ def create_app(test_config=None):
             'actors': selected_actors,
             'total_actors': len(selected_actors),
         })
-    
+
     @app.route('/actors/<int:actor_id>')
     @requires_auth('read:actors')
     def get_actor(actor_id):
@@ -58,7 +56,7 @@ def create_app(test_config=None):
 
         if actor is None:
             abort(404)
-        
+
         return jsonify({
             'success': True,
             'actor': actor.format()
@@ -88,7 +86,6 @@ def create_app(test_config=None):
             'success': True,
             'id': new_actor.id,
             'total_actors': len(Actor.query.all()),
-            'url': url_for('home')
         })
 
     @app.route('/actors/<int:actor_id>', methods=['PATCH'])
@@ -158,6 +155,7 @@ def create_app(test_config=None):
             'success': True,
             'movie': movie.format()
         })
+
     @app.route('/movies', methods=['POST'])
     @requires_auth('add:movies')
     def add_movie():
