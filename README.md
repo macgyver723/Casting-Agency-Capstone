@@ -4,10 +4,9 @@ This API can be used to aid Casting Assistants, Casting Directors, and Executive
 
 ## Accessing the live URL
 
-The Casting Agency can be accessed either directly through the API or using the frontend.
+The Casting Agency can be accessed either directly through the API or using the frontend by navigating to the root URL.
 
-- API route URL: [url to site](urltosite)
-- Frontend URL: [urltofrontent](urltosite)
+- Root URL: [https://casting-agency-stefan.herokuapp.com/](https://casting-agency-stefan.herokuapp.com/)
 
 The Authorization tokens are stored inside of the `setup.sh` shell file, however, should the tokens expire here are the logins for specific roles:
 
